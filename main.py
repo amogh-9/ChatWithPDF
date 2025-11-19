@@ -104,12 +104,12 @@ while True:
         "question": query
     })
 
+    print("\nANSWER:\n")
+    print(response)
+
     
 
 
-response = chain.invoke({"text": context, "question": query})
-print("\nANSWER:\n")
-print(response)
 
 
 
