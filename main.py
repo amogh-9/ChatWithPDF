@@ -22,7 +22,6 @@ parser = StrOutputParser()
 print("Welcome to ChatWithPDF!")
 
 pdf_path = input("Please Load Your PDF File by entering the path: \n")
-#pdf_path = "C:\\Users\\amogh\\OneDrive\\Desktop\\ChatWithPDF\\data\\ITPM_Unit_6.pptx.pdf"
 
 if not os.path.exists(pdf_path):
     print("❌ File not found!")
@@ -55,15 +54,6 @@ chunks = text_splitter.split_documents(docs)
 
 db_path = "my_chroma_db"
 
-# db_exists = os.path.exists(db_path) and len(os.listdir(db_path)) > 0
-
-# if db_exists:
-#     vector_space = Chroma(
-#         persist_directory=db_path,
-#         embedding_function=model
-#     )
-# else:
-
 vector_space = Chroma.from_documents(
         documents=chunks,
         embedding=model,
@@ -71,16 +61,13 @@ vector_space = Chroma.from_documents(
         collection_name="pdfText"
     )
 
-print("PDF has uploaded successfully....")
-query=input("Your question:")
+print("PDF has been uploaded successfully....")
 
 retriever = vector_space.as_retriever(
     search_type="similarity",
     search_kwargs={"k": 3}
 )
 
-result = retriever.invoke(query)
-context = "\n\n".join([doc.page_content for doc in result])
 
 prompt = PromptTemplate(
     input_variables=["text", "question"],
@@ -102,10 +89,27 @@ If the answer is not found in the text, say: "The answer is not available in the
 
 chain = prompt | llm | parser
 
+while True:
+    query = input("\nYour question (or type 'exit'): ")
+
+    if query.lower() in ["exit", "quit", "q"]:
+        print("Goodbye!")
+        break
+
+    result = retriever.invoke(query)
+    context = "\n\n".join([doc.page_content for doc in result])
+
+    response = chain.invoke({
+        "text": context,
+        "question": query
+    })
+
+    
+
+
 response = chain.invoke({"text": context, "question": query})
 print("\nANSWER:\n")
 print(response)
-
 
 
 
